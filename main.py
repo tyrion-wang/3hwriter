@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 
 # 配置openai的API Key
 gpt_lib.set_openai_key()
-print(os.environ.get('OPENAI_API_KEY'))
 # 初始化Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
