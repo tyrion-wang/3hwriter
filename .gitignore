@@ -157,3 +157,10 @@ pip-selfcheck.json
 
 
 # End of https://www.toptal.com/developers/gitignore/api/python
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/.gitignore
+/.idea/3hwriter.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
