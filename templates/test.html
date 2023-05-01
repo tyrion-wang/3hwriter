@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+123123
+<script type="text/javascript">
+    console.error('http://' + document.domain + ':' + location.port)
+</script>
+
+<script type="text/javascript">
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    console.error('http://' + document.domain + ':' + location.port)
+
+      socket.on('my response', function(data) {
+        $('#transcription').append(data);
+      });
+
+      $(function() {
+        $('form').on('submit', function(event) {
+          socket.emit('my event', $('#message').val());
+          $('#message').val('').focus();
+          event.preventDefault();
+        });
+      });
+    function transcribe() {
+        // 获取用户输入的文字和相似度
+        var text = document.getElementById('text').value;
+        var similarity = document.getElementById('similarity').value;
+
+        // 发送POST请求到服务器
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/transcribe');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // 解析服务器返回的JSON数据
+                var data = JSON.parse(xhr.responseText);
+                // 将转写结果显示在页面上
+                document.getElementById('transcription').value = data.transcription;
+            }
+        };
+
+        xhr.send('text=' + encodeURIComponent(text) + '&similarity=' + encodeURIComponent(similarity));
+    }
+
+    function copyToClipboard() {
+        // 获取要复制的内容
+        var transcription = document.getElementById('transcription').value;
+        // 创建临时textarea元素并设置内容
+        var textarea = document.createElement('textarea');
+        textarea.value = transcription;
+        document.body.appendChild(textarea);
+        // 选中临时元素的内容并复制
+        textarea.select();
+        document.execCommand('copy');
+        // 删除临时元素
+        document.body.removeChild(textarea);
+    }
+</script>
+</body>
+</html>

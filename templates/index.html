@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AI Writer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="row mt-5">
+        <div class="col text-center">
+            <h1>AI Writer</h1>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <form id="input-form" method="POST" >
+            <div class="row mt-5">
+                <div class="col">
+                    <div class="form-floating">
+                        <textarea class="form-control" name="input_text" placeholder="请输入需要加工的文字" id="text" style="height: 200px">ChatGPT（全名：Chat Generative Pre - trained Transformer），美国OpenAI[1]研发的聊天机器人程序[12]  ，于2022年11月30日发布[2 - 3]  。ChatGPT是人工智能技术驱动的自然语言处理工具，它能够通过理解和学习人类的语言来进行对话，还能根据聊天的上下文进行互动，真正像人类一样来聊天交流，甚至能完成撰写邮件、视频脚本、文案、翻译、代码，写论文[21]等任务。</textarea>
+                        <label for="text">请输入需要加工的文字</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select class="form-select" id="similarity">
+                            <option value="0.9">相似度90%</option>
+                            <option value="0.8">相似度80%</option>
+                            <option value="0.7">相似度70%</option>
+                            <option value="0.6">相似度60%</option>
+                            <option value="0.5">相似度50%</option>
+                        </select>
+                        <label for="similarity">选择转写相似度</label>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <button type="button" class="btn btn-primary" onclick="transcribe()">转写</button>
+                    <button name="ai_write_btn" type="button" class="btn btn-primary" onclick="ai_write()">Write</button>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="form-floating">
+                        <textarea class="form-control" placeholder="转写结果" id="transcription" readonly style="height: 200px"></textarea>
+                        <label for="transcription">转写结果</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col text-center">
+                    <button type="button" class="btn btn-primary" onclick="copyToClipboard()">自动复制</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+
+<script type="text/javascript" charset="utf-8">
+    function transcribe() {
+        // 获取用户输入的文字和相似度
+        var text = document.getElementById('text').value;
+        var similarity = document.getElementById('similarity').value;
+
+        // 发送POST请求到服务器
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/transcribe');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // 解析服务器返回的JSON数据
+                var data = JSON.parse(xhr.responseText);
+                // 将转写结果显示在页面上
+                document.getElementById('transcription').value = data.transcription;
+            }
+        };
+
+        xhr.send('text=' + encodeURIComponent(text) + '&similarity=' + encodeURIComponent(similarity));
+    }
+
+    function ai_write() {
+        console.log("ai_write");
+    }
+
+    var searchForm = document.getElementById('input-form');
+    searchForm.ai_write_btn.addEventListener('click', async function(event) {
+      event.preventDefault();
+      var formData = new FormData(searchForm);
+      formData.append('input_text', searchForm.elements.input_text.value);
+      console.log(searchForm.elements.input_text.value);
+      {#document.getElementById("transcription").innerHTML += searchForm.elements.input_text.value;#}
+      try {
+          const response = await fetch('/completion', {
+              method: 'POST',
+              body: formData
+          });
+          const reader = response.body.getReader();
+          document.getElementById("transcription").innerHTML = "";
+          while (true) {
+              const {done, value} = await reader.read();
+              if (done) break;
+              const text = new TextDecoder().decode(value);
+              document.getElementById("transcription").innerHTML += text;
+          }
+      } catch (error) {
+          console.error(error);
+      }
+    });
+
+
+</script>
+
+
+
+
+
+
+
+
+{############################################}
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML"></script>
+    <script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/a11y-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <!-- and it's easy to individually load additional languages -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/go.min.js"></script>
+<div class="content">
+</div>
+<div class="input-area">
+    <textarea name="text" id="textarea"></textarea>
+    <div class="button-area">
+        <button id="send-btn" class="talk_sub">发 送</button>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+    let returnMessageAjax = null;
+    function get_time_str(time) {
+        let year = time.getFullYear(); //得到年份
+        let month = time.getMonth()+1;//得到月份
+        let date = time.getDate();//得到日期
+        let hour = time.getHours();//得到小时
+        if (hour < 10) hour = "0" + hour;
+        let minu = time.getMinutes();//得到分钟
+        if (minu < 10) minu = "0" + minu;
+        return year + "年" + month + "月" + date + "日 " + hour + ":" + minu
+    }
+    let last_time = 0
+
+    $("#send-btn").click(function () {
+        console.log("click")
+        var text = $("#textarea").val();
+        console.log("text");
+        console.log(text);
+        if (text == "") {
+            alert("请输入内容");
+            return;
+        }
+        let html = ''
+        let send_time = new Date();
+        let send_time_str = '';
+        if (send_time.getTime() - last_time > 1000 * 60 * 5) {
+            // 以'%Y年%#m月%#d日 %H:%M'格式显示时间
+            html += '<div class="item item-center"><span>' + get_time_str(send_time) + '</span></div>';
+            last_time = send_time.getTime();
+            send_time_str = get_time_str(send_time);
+        }
+        html += '<div class="item item-right"><div class="bubble bubble-right markdown">' + marked.marked(text) + '</div><div class="avatar"><img src="./static/people.jpg" /></div></div>';
+        $(".content").append(html);
+        $("#textarea").val("");
+        $(".content").scrollTop($(".content")[0].scrollHeight);
+        if(text.startsWith('new:')) send_time_str = get_time_str(send_time)
+        let chat_item = $('<div class="item item-left"><div class="avatar"><img src="./static/chatgpt.png" /></div><div class="bubble bubble-left markdown">正在等待回复</div></div>')
+        $(".content").append(chat_item);
+        $(".content").scrollTop($(".content")[0].scrollHeight);
+        let get_times = 0;
+        returnMessageAjax = $.ajax({
+            url: "/returnMessage",
+            data: {
+                "send_message": text,
+                "send_time": send_time_str   // 当为空时，即告知后端不用存储
+            },
+            type: "Post",
+            dataType: "json",
+            xhrFields: {
+                onprogress: function (e) {
+                    let response = e.currentTarget.response;
+                    // console.log(response);
+                    if (response.startsWith("url_redirect:")){
+                        window.location.href=response.split(":")[1];
+                    } else {
+                        get_times += 1;
+                        if (get_times === 2) {
+                            $("#stop-btn").show();
+                        }
+                        let div =  document.createElement('div');
+                        div.innerHTML = marked.marked(response);
+                        MathJax.Hub.Typeset(div);
+                        chat_item.find(".bubble").empty();
+                        chat_item.find(".bubble").append(div);
+                        $(".content").scrollTop($(".content")[0].scrollHeight);
+                    }
+                },
+                onload: function (e) {
+                    $("#stop-btn").hide();
+                }
+            },
+            timeout: 1000 * 60 * 2,
+            complete: function (XMLHttpRequest, status) {
+                if (status === 'timeout') {
+                    alert("请求超时");
+                }
+                $("#stop-btn").hide();
+                let btn = $("<span class=\"code-copy-btn\" onclick='codeCopy(this)'>复制代码</span>");
+                btn.prependTo(chat_item.find(".bubble").find("pre"));
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
