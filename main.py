@@ -257,7 +257,7 @@ def return_message():
     messages_history = [{"role": "assistant", "content": "1."},
                         {"role": "assistant", "content": "2."},
                         {"role": "assistant", "content": "3."}]
-    chat_with_history = True
+    chat_with_history = False
     apikey = API_KEY
 
     if STREAM_FLAG:
