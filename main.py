@@ -3,16 +3,7 @@ import openai
 import os
 import json
 import gpt_lib
-import logging
-from flask_socketio import SocketIO, emit
-# import eventlet
-# eventlet.monkey_patch()
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-from langchain import OpenAI
-
-# import unstructured
-from dotenv import load_dotenv
+# import logging
 
 # 配置openai的API Key
 gpt_lib.set_openai_key()
@@ -20,15 +11,8 @@ gpt_lib.set_openai_key()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
-load_dotenv()
-
-# embeddings = OpenAIEmbeddings(openai_api_key=os.environ['OPENAI_API_KEY'])
-# embeddings = OpenAIEmbeddings(openai_api_key=str(os.environ.get('OPENAI_API_KEY')))
-# persist_directory = '/Users/bytedance/Downloads/database/'
-# docsearch = Chroma(embedding_function=embeddings, persist_directory=persist_directory)
-
 
 # 定义首页
 @app.route('/')
@@ -44,17 +28,14 @@ def transcribe():
     # 获取用户选择的相似度
     similarity = request.form['similarity']
     temperature = 1.0 - float(similarity) / 10.0
-    #transcription = gpt_lib.chat(text, "围绕这个命题，生成一个800字的作文：", temperature)
+    # transcription = gpt_lib.chat(text, "围绕这个命题，生成一个800字的作文：", temperature)
     transcription = gpt_lib.chat(text, "总结这段文本，10个字以内：", temperature)
-    #gpt_lib.chat_stream(text, "围绕这个命题，生成一个800字的作文：", temperature, socketio)
+    # gpt_lib.chat_stream(text, "围绕这个命题，生成一个800字的作文：", temperature, socketio)
     # gpt_lib.chat_stream(text, "总结这段文本", temperature, socketio)
     # transcription = "123"
     # 返回json格式的结果
     return jsonify({'transcription': transcription.strip()})
 
-# @app.route('/write', methods=['GET', 'POST'])
-# def write():
-#     print("write")
 
 def gen_prompt(docs, query) -> str:
     return f"""To answer the question please only use the Context given, nothing else. Do not make up answer, simply say 'I don't know' if you are not sure.
@@ -62,6 +43,7 @@ Question: {query}
 Context: {[doc.page_content for doc in docs]}
 Answer:
 """
+
 
 def prompt(query):
     # print(query)
@@ -74,13 +56,14 @@ def prompt(query):
 
 
 def stream(input_text):
-        completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[
-            {"role": "system", "content": "You're an assistant."},
-            {"role": "user", "content": f"{prompt(input_text)}"},
-        ], stream=True, max_tokens=4000, temperature=0)
-        for line in completion:
-            if 'content' in line['choices'][0]['delta']:
-                yield line['choices'][0]['delta']['content']
+    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[
+        {"role": "system", "content": "You're an assistant."},
+        {"role": "user", "content": f"{prompt(input_text)}"},
+    ], stream=True, max_tokens=4000, temperature=0)
+    for line in completion:
+        if 'content' in line['choices'][0]['delta']:
+            yield line['choices'][0]['delta']['content']
+
 
 @app.route('/completion', methods=['GET', 'POST'])
 def completion_api():
@@ -95,24 +78,11 @@ def completion_api():
 
 
 ########################################################
-import uuid
 import requests
+
 STREAM_FLAG = True  # 是否开启流式推送
 CHAT_CONTEXT_NUMBER_MAX = 12
-# API_KEY = os.environ.get('OPENAI_API_KEY')
 API_KEY = os.environ.get('OPENAI_API_KEY')
-def check_session(current_session):
-    """
-    检查session，如果不存在则创建新的session
-    :param current_session: 当前session
-    :return: 当前session
-    """
-    if current_session.get('session_id') is not None:
-        print("existing session, session_id:\t", current_session.get('session_id'))
-    else:
-        current_session['session_id'] = uuid.uuid1()
-        print("new session, session_id:\t", current_session.get('session_id'))
-    return current_session['session_id']
 
 def get_message_context(message_history, have_chat_context, chat_with_history):
     """
@@ -146,8 +116,9 @@ def get_message_context(message_history, have_chat_context, chat_with_history):
         message_context.append(message_history[-1])
         total += len(message_history[-1]['content'])
 
-    print(f"len(message_context): {len(message_context)} total: {total}",)
+    # print(f"len(message_context): {len(message_context)} total: {total}", )
     return message_context
+
 
 def get_response_from_ChatGPT_API(message_context, apikey):
     """
@@ -186,7 +157,8 @@ def get_response_from_ChatGPT_API(message_context, apikey):
 
     return data
 
-def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history):
+
+def get_response_stream_generate_from_ChatGPT_API(message_context, apikey):
     """
     从ChatGPT API获取回复
     :param apikey:
@@ -213,7 +185,6 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
         def generate():
             stream_content = str()
             one_message = {"role": "assistant", "content": stream_content}
-            message_history.append(one_message)
             i = 0
             for line in response.iter_lines():
                 # print(str(line))
@@ -241,7 +212,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
                                     yield delta_content
 
                 elif len(line_str.strip()) > 0:
-                    print(line_str)
+                    # print(line_str)
                     yield line_str
 
     except Exception as e:
@@ -251,6 +222,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey, messa
             yield "request error:\n" + str(ee)
 
     return generate
+
 
 def handle_messages_get_response(message, apikey, message_history, have_chat_context, chat_with_history):
     """
@@ -265,21 +237,15 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
     response = get_response_from_ChatGPT_API(message_context, apikey)
     message_history.append({"role": "assistant", "content": response})
-    # 换行打印messages_history
-    # print("message_history:")
-    # for i, message in enumerate(message_history):
-    #     if message['role'] == 'user':
-    #         print(f"\t{i}:\t{message['role']}:\t\t{message['content']}")
-    #     else:
-    #         print(f"\t{i}:\t{message['role']}:\t{message['content']}")
-
     return response
+
 
 def handle_messages_get_response_stream(message, apikey, message_history, have_chat_context, chat_with_history):
     message_history.append({"role": "user", "content": message})
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
-    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey, message_history)
+    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey)
     return generate
+
 
 @app.route('/returnMessage', methods=['GET', 'POST'])
 def return_message():
@@ -287,57 +253,19 @@ def return_message():
     获取用户发送的消息，调用get_chat_response()获取回复，返回回复，用于更新聊天框
     :return:
     """
-    check_session(session)
     send_message = request.values.get("send_message").strip()
-    send_time = request.values.get("send_time").strip()
-    url_redirect = "url_redirect:/"
-    if send_message == "帮助":
-        return "### 帮助\n" \
-               "1. 输入`new:xxx`创建新的用户id\n " \
-               "2. 输入`id:your_id`切换到已有用户id，新会话时无需加`id:`进入已有用户\n" \
-               "3. 输入`set_apikey:`[your_apikey](https://platform.openai.com/account/api-keys)设置用户专属apikey，`set_apikey:none`可删除专属key\n" \
-               "4. 输入`rename_id:xxx`可将当前用户id更改\n" \
-               "5. 输入`查余额`可获得余额信息及最近几天使用量\n" \
-               "6. 输入`帮助`查看帮助信息"
-
-    user_id = session.get('user_id')
-    print(f"用户({user_id})发送消息:{send_message}")
-    # user_info = get_user_info(user_id)
-    chat_id = '001'
-    messages_history = [{"role": "assistant", "content": "123"},
-                        {"role": "assistant", "content": "#### 当前浏览器会话为首次请求\n"
-                                                         "#### 请输入已有用户`id`或创建新的用户`id`。\n"
-                                                         "- 已有用户`id`请在输入框中直接输入\n"
-                                                         "- 创建新的用户`id`请在输入框中输入`new:xxx`,其中`xxx`为你的自定义id，请牢记\n"
-                                                         "- 输入`帮助`以获取帮助提示"}]
-    chat_with_history = False
+    messages_history = [{"role": "assistant", "content": "1."},
+                        {"role": "assistant", "content": "2."},
+                        {"role": "assistant", "content": "3."}]
+    chat_with_history = True
     apikey = API_KEY
-    # if chat_with_history:
-    #     # user_info['chats'][chat_id]['have_chat_context'] += 1
-    if send_time != "":
-        messages_history.append({'role': 'system', "content": send_time})
-    if not STREAM_FLAG:
-        content = handle_messages_get_response(send_message, apikey, messages_history,
-                                               '123',
-                                               chat_with_history)
 
-        print(f"用户({session.get('user_id')})得到的回复消息:{content[:40]}...")
-        # if chat_with_history:
-        #     # user_info['chats'][chat_id]['have_chat_context'] += 1
-        # 异步存储all_user_dict
-        # asyncio.run(save_all_user_dict())
-        return content
-    else:
-        generate = handle_messages_get_response_stream(send_message, apikey, messages_history,
-                                                       '123',
-                                                       chat_with_history)
-
-        # if chat_with_history:
-        #     user_info['chats'][chat_id]['have_chat_context'] += 1
-
+    if STREAM_FLAG:
+        generate = handle_messages_get_response_stream(send_message, apikey, messages_history, 12, chat_with_history)
         return app.response_class(generate(), mimetype='application/json')
-
-
+    else:
+        generate = handle_messages_get_response(send_message, apikey, messages_history, 12, chat_with_history)
+        return generate
 
 
 if __name__ == '__main__':

@@ -6,7 +6,4 @@ Jinja2
 MarkupSafe
 Werkzeug
 openai
-flask_socketio
 requests
-langchain
-python-dotenv
