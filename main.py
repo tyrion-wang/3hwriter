@@ -4,6 +4,7 @@ import os
 import json
 import gpt_lib
 # import logging
+import threading
 
 # 配置openai的API Key
 gpt_lib.set_openai_key()
@@ -13,7 +14,7 @@ app.config['SECRET_KEY'] = 'secret!'
 
 # logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
-
+lock = threading.Lock()  # 用于线程锁
 # 定义首页
 @app.route('/')
 def index():
