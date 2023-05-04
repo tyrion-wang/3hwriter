@@ -10,7 +10,7 @@ import threading
 gpt_lib.set_openai_key()
 # 初始化Flask
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.config['SECRET_KEY'] = os.urandom(24)
 
 # logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
