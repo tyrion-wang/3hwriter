@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = os.urandom(24)
 # logging.disable()
 lock = threading.Lock()  # 用于线程锁
 # 定义首页
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
 
