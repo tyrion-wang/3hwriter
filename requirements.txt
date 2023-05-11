@@ -7,3 +7,5 @@ MarkupSafe
 Werkzeug
 openai
 requests
+PyYaml
+pysocks
