@@ -85,7 +85,7 @@ STREAM_FLAG = True  # 是否开启流式推送
 CHAT_CONTEXT_NUMBER_MAX = 12
 API_KEY = os.environ.get('OPENAI_API_KEY')
 
-def get_message_context(message_history, have_chat_context, chat_with_history):
+def get_message_context1(message_history, have_chat_context, chat_with_history):
     """
     获取上下文
     :param message_history:
@@ -121,7 +121,7 @@ def get_message_context(message_history, have_chat_context, chat_with_history):
     return message_context
 
 
-def get_response_from_ChatGPT_API(message_context, apikey):
+def get_response_from_ChatGPT_API1(message_context, apikey):
     """
     从ChatGPT API获取回复
     :param apikey:
@@ -159,7 +159,7 @@ def get_response_from_ChatGPT_API(message_context, apikey):
     return data
 
 
-def get_response_stream_generate_from_ChatGPT_API(message_context, apikey):
+def get_response_stream_generate_from_ChatGPT_API1(message_context, apikey):
     """
     从ChatGPT API获取回复
     :param apikey:
@@ -168,7 +168,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey):
     """
     if apikey is None:
         apikey = API_KEY
-
+    print(apikey)
     header = {"Content-Type": "application/json",
               "Authorization": "Bearer " + apikey}
 
@@ -225,7 +225,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey):
     return generate
 
 
-def handle_messages_get_response(message, apikey, message_history, have_chat_context, chat_with_history):
+def handle_messages_get_response1(message, apikey, message_history, have_chat_context, chat_with_history):
     """
     处理用户发送的消息，获取回复
     :param message: 用户发送的消息
@@ -235,21 +235,21 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
     :param chat_with_history: 是否连续对话
     """
     message_history.append({"role": "user", "content": message})
-    message_context = get_message_context(message_history, have_chat_context, chat_with_history)
-    response = get_response_from_ChatGPT_API(message_context, apikey)
+    message_context = get_message_context1(message_history, have_chat_context, chat_with_history)
+    response = get_response_from_ChatGPT_API1(message_context, apikey)
     message_history.append({"role": "assistant", "content": response})
     return response
 
 
-def handle_messages_get_response_stream(message, apikey, message_history, have_chat_context, chat_with_history):
+def handle_messages_get_response_stream1(message, apikey, message_history, have_chat_context, chat_with_history):
     message_history.append({"role": "user", "content": message})
-    message_context = get_message_context(message_history, have_chat_context, chat_with_history)
-    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey)
+    message_context = get_message_context1(message_history, have_chat_context, chat_with_history)
+    generate = get_response_stream_generate_from_ChatGPT_API1(message_context, apikey)
     return generate
 
 
-@app.route('/returnMessage', methods=['GET', 'POST'])
-def return_message():
+@app.route('/returnMessage1', methods=['GET', 'POST'])
+def return_message1():
     """
     获取用户发送的消息，调用get_chat_response()获取回复，返回回复，用于更新聊天框
     :return:
@@ -262,13 +262,13 @@ def return_message():
     apikey = API_KEY
 
     if STREAM_FLAG:
-        generate = handle_messages_get_response_stream(send_message, apikey, messages_history, 12, chat_with_history)
+        generate = handle_messages_get_response_stream1(send_message, apikey, messages_history, 12, chat_with_history)
         return app.response_class(generate(), mimetype='application/json')
     else:
-        generate = handle_messages_get_response(send_message, apikey, messages_history, 12, chat_with_history)
+        generate = handle_messages_get_response1(send_message, apikey, messages_history, 12, chat_with_history)
         return generate
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=os.getenv("PORT", default=5000), debug=False)
-    # app.run(debug=False, port=os.getenv("PORT", default=5000))
+    # app.run(host="0.0.0.0", port=os.getenv("PORT", default=5000), debug=False)
+    app.run(debug=False, port=os.getenv("PORT", default=5000))
