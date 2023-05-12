@@ -78,7 +78,7 @@ def completion_api():
         return Response(None, mimetype='text/event-stream')
 
 
-######################################################
+#####################################################
 import requests
 
 STREAM_FLAG = True  # 是否开启流式推送
