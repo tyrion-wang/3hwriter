@@ -1,3 +1,4 @@
+import flask
 from flask import Flask, render_template, request, jsonify, Response, session
 import openai
 import os
@@ -66,17 +67,29 @@ def stream(input_text):
             yield line['choices'][0]['delta']['content']
 
 
-@app.route('/completion', methods=['GET', 'POST'])
-def completion_api():
-    # print("111")
-    # return "test return"
-    if request.method == "POST":
-        data = request.form
-        input_text = data['input_text']
-        return Response(stream(input_text), mimetype='text/event-stream')
-    else:
-        return Response(None, mimetype='text/event-stream')
+# @app.route('/completion', methods=['GET', 'POST'])
+# def completion_api():
+#     # print("111")
+#     # return "test return"
+#     if request.method == "POST":
+#         data = request.form
+#         input_text = data['input_text']
+#         return Response(stream(input_text), mimetype='text/event-stream')
+#     else:
+#         return Response(None, mimetype='text/event-stream')
 
+@app.route('/completion', methods=['GET'])
+def completion_api():
+    def stream():
+        completion = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[{"role": "user", "content": "Hello world"}],
+            stream=True)
+        for line in completion:
+            chunk = line['choices'][0].get('delta', {}).get('content', '')
+            if chunk:
+                yield 'data: %s\n\n' % chunk
+    return flask.Response(stream(), mimetype='text/event-stream')
 
 #####################################################
 import requests
@@ -244,7 +257,10 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
 def handle_messages_get_response_stream(message, apikey, message_history, have_chat_context, chat_with_history):
     message_history.append({"role": "user", "content": message})
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
+    print(message_history)
+    print(message_context)
     generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey)
+    generate = "123"
     return generate
 
 

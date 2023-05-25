@@ -19,6 +19,15 @@
 </head>
 <body>
 
+<h1>response:</h1>
+<div id="result"></div>
+<script>
+    var source = new EventSource("/completion");
+    source.onmessage = function(event) {
+        document.getElementById("result").innerHTML += event.data;
+    };
+</script>
+
 <div class="container">
 
     <div class="row mt-5">
