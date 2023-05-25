@@ -19,13 +19,17 @@
 </head>
 <body>
 
-<h1>response:</h1>
+<button id="send_b" class="talk_sub">发 送</button>
 <div id="result"></div>
-<script>
-    var source = new EventSource("/completion");
-    source.onmessage = function(event) {
-        document.getElementById("result").innerHTML += event.data;
-    };
+<script type="text/javascript" charset="utf-8">
+
+    $("#send_b").click(function (){
+        console.log("send_b click");
+        var source = new EventSource("/completion_test");
+        source.onmessage = function(event) {
+            document.getElementById("result").innerHTML += event.data;
+        };
+    });
 </script>
 
 <div class="container">

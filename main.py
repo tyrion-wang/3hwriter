@@ -78,9 +78,12 @@ def stream(input_text):
 #     else:
 #         return Response(None, mimetype='text/event-stream')
 
-@app.route('/completion', methods=['GET'])
+@app.route('/completion_test', methods=['GET'])
 def completion_api():
-    def stream():
+    print("completion_api")
+    def stream1():
+        print("stream1")
+        # return "123"
         completion = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=[{"role": "user", "content": "Hello world"}],
@@ -89,7 +92,7 @@ def completion_api():
             chunk = line['choices'][0].get('delta', {}).get('content', '')
             if chunk:
                 yield 'data: %s\n\n' % chunk
-    return flask.Response(stream(), mimetype='text/event-stream')
+    return flask.Response(stream1(), mimetype='text/event-stream')
 
 #####################################################
 import requests
@@ -286,5 +289,5 @@ def return_message():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=os.getenv("PORT", default=5000), debug=False)
-    # app.run(debug=False, port=os.getenv("PORT", default=5000))
+    # app.run(host="0.0.0.0", port=os.getenv("PORT", default=5000), debug=False)
+    app.run(debug=False, port=os.getenv("PORT", default=5000))
