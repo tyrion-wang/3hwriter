@@ -240,6 +240,27 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey):
 
     return generate
 
+def get_response_stream_generate_from_ChatGPT_API_V2(message_context, apikey):
+    """
+    从ChatGPT API获取回复
+    :param apikey:
+    :param message_context: 上下文
+    :return: 回复
+    """
+    def stream():
+        completion = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=message_context,
+            stream=True)
+        for line in completion:
+            if line['choices'][0]['finish_reason'] is not None:
+                chunk = '[DONE]'
+            else:
+                chunk = line['choices'][0].get('delta', {}).get('content', '')
+            if chunk:
+                yield 'data: %s\n\n' % chunk
+    return stream
+
 
 def handle_messages_get_response(message, apikey, message_history, have_chat_context, chat_with_history):
     """
@@ -262,7 +283,7 @@ def handle_messages_get_response_stream(message, apikey, message_history, have_c
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
     # print(message_history)
     # print(message_context)
-    generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey)
+    generate = get_response_stream_generate_from_ChatGPT_API_V2(message_context, apikey)
     # generate = "123"
     return generate
 
@@ -282,7 +303,8 @@ def return_message():
 
     if STREAM_FLAG:
         generate = handle_messages_get_response_stream(send_message, apikey, messages_history, 12, chat_with_history)
-        return app.response_class(generate(), mimetype='application/json')
+        return flask.Response(generate(), mimetype='text/event-stream')
+        # return app.response_class(generate(), mimetype='application/json')
     else:
         generate = handle_messages_get_response(send_message, apikey, messages_history, 12, chat_with_history)
         return generate
