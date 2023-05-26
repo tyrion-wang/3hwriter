@@ -78,21 +78,21 @@ def stream(input_text):
 #     else:
 #         return Response(None, mimetype='text/event-stream')
 
-@app.route('/completion_test', methods=['GET'])
-def completion_api():
-    print("completion_api")
-    def stream1():
-        print("stream1")
-        # return "123"
+@app.route('/completion', methods=['GET'])
+def completion():
+    def stream():
         completion = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
-            messages=[{"role": "user", "content": "Hello world"}],
+            messages=[{"role": "user", "content": "500字总结2000年的全球大事件。"}],
             stream=True)
         for line in completion:
-            chunk = line['choices'][0].get('delta', {}).get('content', '')
+            if line['choices'][0]['finish_reason'] is not None:
+                chunk = '[DONE]'
+            else:
+                chunk = line['choices'][0].get('delta', {}).get('content', '')
             if chunk:
                 yield 'data: %s\n\n' % chunk
-    return flask.Response(stream1(), mimetype='text/event-stream')
+    return flask.Response(stream(), mimetype='text/event-stream')
 
 #####################################################
 import requests

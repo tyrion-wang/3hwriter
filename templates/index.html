@@ -25,9 +25,13 @@
 
     $("#send_b").click(function (){
         console.log("send_b click");
-        var source = new EventSource("/completion_test");
+        var source = new EventSource("/completion");
         source.onmessage = function(event) {
-            document.getElementById("result").innerHTML += event.data;
+            if (event.data == "[DONE]"){
+                source.close()
+            }else {
+                document.getElementById("result").innerHTML += event.data;
+            }
         };
     });
 </script>
