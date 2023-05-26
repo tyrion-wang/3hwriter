@@ -260,10 +260,10 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
 def handle_messages_get_response_stream(message, apikey, message_history, have_chat_context, chat_with_history):
     message_history.append({"role": "user", "content": message})
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
-    print(message_history)
-    print(message_context)
+    # print(message_history)
+    # print(message_context)
     generate = get_response_stream_generate_from_ChatGPT_API(message_context, apikey)
-    generate = "123"
+    # generate = "123"
     return generate
 
 
