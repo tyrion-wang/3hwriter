@@ -187,7 +187,7 @@
         $(".content").append(chat_item);
         $(".content").scrollTop($(".content")[0].scrollHeight);
 
-        var source = new EventSource("/completion?send_message="+text);
+        var source = new EventSource("/returnMessage?send_message="+text);
         source.onmessage = function(event) {
             if (event.data == "[DONE]"){
                 source.close()
@@ -195,47 +195,6 @@
                 document.getElementById("gpt_result").innerHTML += event.data;
             }
         };
-
-        let get_times = 0;
-        {#returnMessageAjax = $.ajax({#}
-        {#    url: "/returnMessage",#}
-        {#    data: {#}
-        {#        "send_message": text,#}
-        {#    },#}
-        {#    type: "Post",#}
-        {#    dataType: "json",#}
-        {#    xhrFields: {#}
-        {#        onprogress: function (e) {#}
-        {#            let response = e.currentTarget.response;#}
-        {#            if (response.startsWith("url_redirect:")){#}
-        {#                window.location.href=response.split(":")[1];#}
-        {#            } else {#}
-        {#                get_times += 1;#}
-        {#                if (get_times === 2) {#}
-        {#                    $("#stop-btn").show();#}
-        {#                }#}
-        {#                let div =  document.createElement('div');#}
-        {#                div.innerHTML = marked.marked(response);#}
-        {#                MathJax.Hub.Typeset(div);#}
-        {#                chat_item.find(".bubble").empty();#}
-        {#                chat_item.find(".bubble").append(div);#}
-        {#                $(".content").scrollTop($(".content")[0].scrollHeight);#}
-        {#            }#}
-        {#        },#}
-        {#        onload: function (e) {#}
-        {#            $("#stop-btn").hide();#}
-        {#        }#}
-        {#    },#}
-        {#    timeout: 1000 * 60 * 2,#}
-        {#    complete: function (XMLHttpRequest, status) {#}
-        {#        if (status === 'timeout') {#}
-        {#            alert("请求超时");#}
-        {#        }#}
-        {#        $("#stop-btn").hide();#}
-        {#        let btn = $("<span class=\"code-copy-btn\" onclick='codeCopy(this)'>复制代码</span>");#}
-        {#        btn.prependTo(chat_item.find(".bubble").find("pre"));#}
-        {#    }#}
-        {#});#}
     });
 
     $("#stop-btn").click(function (){

@@ -240,7 +240,7 @@ def get_response_stream_generate_from_ChatGPT_API(message_context, apikey):
 
     return generate
 
-def get_response_stream_generate_from_ChatGPT_API_V2(message_context, apikey):
+def get_response_stream_generate_from_ChatGPT_API_V2(message_context):
     """
     从ChatGPT API获取回复
     :param apikey:
@@ -283,7 +283,7 @@ def handle_messages_get_response_stream(message, apikey, message_history, have_c
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
     # print(message_history)
     # print(message_context)
-    generate = get_response_stream_generate_from_ChatGPT_API_V2(message_context, apikey)
+    generate = get_response_stream_generate_from_ChatGPT_API_V2(message_context)
     # generate = "123"
     return generate
 
