@@ -15,10 +15,13 @@ app.config['SECRET_KEY'] = os.urandom(24)
 # logging.disable()
 
 # 定义首页
+@app.route('/test', methods=['GET', 'POST'])
+def index_test():
+    return render_template('index2.html')
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
-
 
 # 定义转写函数
 @app.route('/transcribe', methods=['POST'])
@@ -140,6 +143,7 @@ def get_response_stream_generate_from_ChatGPT_API_V2(message_context):
                 chunk = line['choices'][0].get('delta', {}).get('content', '')
             if chunk:
                 yield 'data: %s\n\n' % chunk
+                # yield 'event: delta\n\ndata: %s\n\n' % chunk
     return stream
 
 def get_response_from_ChatGPT_API_V2(message_context):
