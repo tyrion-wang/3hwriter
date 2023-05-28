@@ -144,6 +144,7 @@ def get_response_stream_generate_from_ChatGPT_API_V2(message_context):
             if chunk:
                 yield 'data: %s\n\n' % chunk
                 # yield 'event: delta\n\ndata: %s\n\n' % chunk
+                # yield "{'event: delta\n\n, 'data: %s\n\n' % chunk}";
     return stream
 
 def get_response_from_ChatGPT_API_V2(message_context):
