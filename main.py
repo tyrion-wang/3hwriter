@@ -5,17 +5,15 @@ import os
 import json
 import gpt_lib
 # import logging
-import threading
 
 # 配置openai的API Key
 gpt_lib.set_openai_key()
 # 初始化Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
-
 # logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
-lock = threading.Lock()  # 用于线程锁
+
 # 定义首页
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -66,18 +64,6 @@ def stream(input_text):
         if 'content' in line['choices'][0]['delta']:
             yield line['choices'][0]['delta']['content']
 
-
-# @app.route('/completion', methods=['GET', 'POST'])
-# def completion_api():
-#     # print("111")
-#     # return "test return"
-#     if request.method == "POST":
-#         data = request.form
-#         input_text = data['input_text']
-#         return Response(stream(input_text), mimetype='text/event-stream')
-#     else:
-#         return Response(None, mimetype='text/event-stream')
-
 @app.route('/completion', methods=['GET'])
 def completion():
     def stream():
@@ -95,7 +81,6 @@ def completion():
     return flask.Response(stream(), mimetype='text/event-stream')
 
 #####################################################
-import requests
 
 STREAM_FLAG = True  # 是否开启流式推送
 CHAT_CONTEXT_NUMBER_MAX = 12
@@ -136,110 +121,6 @@ def get_message_context(message_history, have_chat_context, chat_with_history):
     # print(f"len(message_context): {len(message_context)} total: {total}", )
     return message_context
 
-
-def get_response_from_ChatGPT_API(message_context, apikey):
-    """
-    从ChatGPT API获取回复
-    :param apikey:
-    :param message_context: 上下文
-    :return: 回复
-    """
-    if apikey is None:
-        apikey = API_KEY
-
-    header = {"Content-Type": "application/json",
-              "Authorization": "Bearer " + apikey}
-
-    data = {
-        "model": "gpt-3.5-turbo",
-        "messages": message_context
-    }
-    url = "https://api.openai.com/v1/chat/completions"
-
-    try:
-        response = requests.post(url, headers=header, data=json.dumps(data))
-        response = response.json()
-        # 判断是否含 choices[0].message.content
-        if "choices" in response \
-                and len(response["choices"]) > 0 \
-                and "message" in response["choices"][0] \
-                and "content" in response["choices"][0]["message"]:
-            data = response["choices"][0]["message"]["content"]
-        else:
-            data = str(response)
-
-    except Exception as e:
-        print(e)
-        return str(e)
-
-    return data
-
-
-def get_response_stream_generate_from_ChatGPT_API(message_context, apikey):
-    """
-    从ChatGPT API获取回复
-    :param apikey:
-    :param message_context: 上下文
-    :return: 回复
-    """
-    if apikey is None:
-        apikey = API_KEY
-
-    header = {"Content-Type": "application/json",
-              "Authorization": "Bearer " + apikey}
-
-    data = {
-        "model": "gpt-3.5-turbo",
-        "messages": message_context,
-        "stream": True
-    }
-    print("开始流式请求")
-    url = "https://api.openai.com/v1/chat/completions"
-    # 请求接收流式数据 动态print
-    try:
-        response = requests.request("POST", url, headers=header, json=data, stream=True)
-
-        def generate():
-            stream_content = str()
-            one_message = {"role": "assistant", "content": stream_content}
-            i = 0
-            for line in response.iter_lines():
-                # print(str(line))
-                line_str = str(line, encoding='utf-8')
-                if line_str.startswith("data:"):
-                    if line_str.startswith("data: [DONE]"):
-                        # asyncio.run(save_all_user_dict())
-                        break
-                    line_json = json.loads(line_str[5:])
-                    if 'choices' in line_json:
-                        if len(line_json['choices']) > 0:
-                            choice = line_json['choices'][0]
-                            if 'delta' in choice:
-                                delta = choice['delta']
-                                if 'role' in delta:
-                                    role = delta['role']
-                                elif 'content' in delta:
-                                    delta_content = delta['content']
-                                    i += 1
-                                    if i < 40:
-                                        print(delta_content, end="")
-                                    elif i == 40:
-                                        print("......")
-                                    one_message['content'] = one_message['content'] + delta_content
-                                    yield delta_content
-
-                elif len(line_str.strip()) > 0:
-                    # print(line_str)
-                    yield line_str
-
-    except Exception as e:
-        ee = e
-
-        def generate():
-            yield "request error:\n" + str(ee)
-
-    return generate
-
 def get_response_stream_generate_from_ChatGPT_API_V2(message_context):
     """
     从ChatGPT API获取回复
@@ -261,8 +142,31 @@ def get_response_stream_generate_from_ChatGPT_API_V2(message_context):
                 yield 'data: %s\n\n' % chunk
     return stream
 
+def get_response_from_ChatGPT_API_V2(message_context):
+    """
+    从ChatGPT API获取回复
+    :param message_context: 上下文
+    :return: 回复
+    """
+    def stream():
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            # temperature=temperature,
+            stream=False,
+            messages=message_context
+        )
+        # 判断是否含 choices[0].message.content
+        if "choices" in response \
+                and len(response["choices"]) > 0 \
+                and "message" in response["choices"][0] \
+                and "content" in response["choices"][0]["message"]:
+            yield 'data: %s\n\n' % response["choices"][0]["message"]["content"]
+            yield 'data: [DONE]\n\n'
+        else:
+            yield 'data: %s\n\n' % str(response)
+    return stream
 
-def handle_messages_get_response(message, apikey, message_history, have_chat_context, chat_with_history):
+def handle_messages_get_response(message, message_history, have_chat_context, chat_with_history):
     """
     处理用户发送的消息，获取回复
     :param message: 用户发送的消息
@@ -273,18 +177,17 @@ def handle_messages_get_response(message, apikey, message_history, have_chat_con
     """
     message_history.append({"role": "user", "content": message})
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
-    response = get_response_from_ChatGPT_API(message_context, apikey)
-    message_history.append({"role": "assistant", "content": response})
+    response = get_response_from_ChatGPT_API_V2(message_context)
+    print(response)
     return response
 
 
-def handle_messages_get_response_stream(message, apikey, message_history, have_chat_context, chat_with_history):
+def handle_messages_get_response_stream(message, message_history, have_chat_context, chat_with_history):
     message_history.append({"role": "user", "content": message})
     message_context = get_message_context(message_history, have_chat_context, chat_with_history)
     # print(message_history)
     # print(message_context)
     generate = get_response_stream_generate_from_ChatGPT_API_V2(message_context)
-    # generate = "123"
     return generate
 
 
@@ -295,19 +198,18 @@ def return_message():
     :return:
     """
     send_message = request.values.get("send_message").strip()
-    messages_history = [{"role": "assistant", "content": "1."},
-                        {"role": "assistant", "content": "2."},
-                        {"role": "assistant", "content": "3."}]
-    chat_with_history = False
+    messages_history = [{"role": "assistant", "content": "1.有2个苹果"},
+                        {"role": "assistant", "content": "2.有3个梨子"},
+                        {"role": "assistant", "content": "3.有2只鸡"}]
+    chat_with_history = True
     apikey = API_KEY
 
     if STREAM_FLAG:
-        generate = handle_messages_get_response_stream(send_message, apikey, messages_history, 12, chat_with_history)
+        generate = handle_messages_get_response_stream(send_message, messages_history, CHAT_CONTEXT_NUMBER_MAX, chat_with_history)
         return flask.Response(generate(), mimetype='text/event-stream')
-        # return app.response_class(generate(), mimetype='application/json')
     else:
-        generate = handle_messages_get_response(send_message, apikey, messages_history, 12, chat_with_history)
-        return generate
+        generate = handle_messages_get_response(send_message, messages_history, CHAT_CONTEXT_NUMBER_MAX, chat_with_history)
+        return flask.Response(generate(), mimetype='text/event-stream')
 
 
 if __name__ == '__main__':
