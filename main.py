@@ -202,7 +202,12 @@ def return_message():
     获取用户发送的消息，调用get_chat_response()获取回复，返回回复，用于更新聊天框
     :return:
     """
-    send_message = request.values.get("send_message").strip()
+    send_message = ""
+    if request.method == 'GET':
+        send_message = request.values.get("send_message").strip()
+    if request.method == 'POST':
+        send_message = request.json
+
     messages_history = [{"role": "assistant", "content": "1.有2个苹果"},
                         {"role": "assistant", "content": "2.有3个梨子"},
                         {"role": "assistant", "content": "3.有2只鸡"}]
