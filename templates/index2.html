@@ -71,11 +71,11 @@
                   document.getElementById("gpt_result").innerHTML += event.data;
               }
           } catch (error) {
-            console.error("failed to parse response. ", event.data);
+            console.error("failed to parse response.", event.data);
           }
         });
         evtSource.onerror = function (event) {
-            console.error("failed to receive response");
+            console.error("failed to receive response.");
         };
     });
 
