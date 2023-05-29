@@ -64,8 +64,12 @@
         });
         evtSource.addEventListener("delta", (event) => {
           try {
-            {#let response = JSON.parse(event.data);#}
-            console.log(event)
+              console.log(event.data)
+              if (event.data == "[DONE]"){
+                  evtSource.close()
+              }else {
+                  document.getElementById("gpt_result").innerHTML += event.data;
+              }
           } catch (error) {
             console.error("failed to parse response. ", event.data);
           }
