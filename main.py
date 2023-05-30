@@ -212,7 +212,6 @@ def return_message():
                         {"role": "assistant", "content": "2.有3个梨子"},
                         {"role": "assistant", "content": "3.有2只鸡"}]
     chat_with_history = True
-    apikey = API_KEY
 
     if STREAM_FLAG:
         generate = handle_messages_get_response_stream(send_message, messages_history, CHAT_CONTEXT_NUMBER_MAX, chat_with_history)
