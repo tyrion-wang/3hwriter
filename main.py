@@ -5,6 +5,7 @@ import os
 import json
 import gpt_lib
 # import logging
+import langchain_test
 
 # 配置openai的API Key
 gpt_lib.set_openai_key()
@@ -15,6 +16,9 @@ app.config['SECRET_KEY'] = os.urandom(24)
 # logging.disable()
 
 # 定义首页
+@app.route('/lc', methods=['GET', 'POST'])
+def langchain_test():
+    return render_template('langchain_test.html')
 @app.route('/test', methods=['GET', 'POST'])
 def index_test():
     return render_template('index2.html')

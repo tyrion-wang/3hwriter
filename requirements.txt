@@ -9,3 +9,4 @@ openai
 requests
 PyYaml
 pysocks
+langchain
