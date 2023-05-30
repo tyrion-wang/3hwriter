@@ -206,7 +206,7 @@ def return_message():
     if request.method == 'GET':
         send_message = request.values.get("send_message").strip()
     if request.method == 'POST':
-        send_message = request.json
+        send_message = request.json["content"]
 
     messages_history = [{"role": "assistant", "content": "1.有2个苹果"},
                         {"role": "assistant", "content": "2.有3个梨子"},
@@ -223,5 +223,5 @@ def return_message():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=os.getenv("PORT", default=5000), debug=False)
-    # app.run(debug=False, port=os.getenv("PORT", default=5000))
+    # app.run(host="0.0.0.0", port=os.getenv("PORT", default=5000), debug=False)
+    app.run(debug=False, port=os.getenv("PORT", default=5000))

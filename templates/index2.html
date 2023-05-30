@@ -53,10 +53,11 @@
 
 
         {#使用Fetch#}
+        const msg = { content: text, uid : "u0001"}
         const { EventSource } = createEventSource();
         var evtSource = new EventSource("/returnMessage", {
           method: "POST",
-          body: JSON.stringify(text),
+          body: JSON.stringify(msg),
           headers: {
             "Cache-Control": "no-cache",
             "Content-Type": "application/json"
