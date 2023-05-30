@@ -3,8 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <title>Langchain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
+
+
+<div class="input-area">
+    <textarea name="text" id="textarea">https://baike.baidu.com/item/ChatGPT</textarea>
+    <div class="button-area">
+        <button id="summary_url_btn" class="talk_sub">总结网页</button>
+        <button id="summary_file_btn" class="talk_sub">总结文档</button>
+    </div>
+</div>
+<div class="content" id="gpt_result"></div>
+
+
+<script type="text/javascript" charset="utf-8">
+    $("#summary_url_btn").click(function (){
+        console.log("Click summary_url_btn")
+        var url = $("#textarea").val();
+        const msg = { content: url, uid : "u0001"}
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.open('POST', '/summary_url', true);
+        httpRequest.setRequestHeader("Content-type","application/json");
+        httpRequest.send(JSON.stringify(msg));
+        /**
+         * 获取数据后的处理程序
+         */
+        httpRequest.onreadystatechange = function () {//请求后的回调接口，可将请求成功后要执行的程序写在其中
+            if (httpRequest.readyState == 4 && httpRequest.status == 200) {//验证请求是否发送成功
+                var data = JSON.parse(httpRequest.responseText);
+                console.log(data.msg);
+                document.getElementById("gpt_result").innerHTML += data.msg;
+            }
+        };
+    });
+
+    $("#summary_file_btn").click(function (){
+        console.log("Click summary_file_btn")
+    });
+
+</script>
+
 
 </body>
 </html>

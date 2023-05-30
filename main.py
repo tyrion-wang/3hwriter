@@ -4,6 +4,7 @@ import openai
 import os
 import json
 import gpt_lib
+from langchain_test import simple_page
 # import logging
 import langchain_test
 
@@ -14,6 +15,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 # logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
+
+#注册蓝图模块
+app.register_blueprint(simple_page)
+
 
 # 定义首页
 @app.route('/lc', methods=['GET', 'POST'])

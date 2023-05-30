@@ -10,3 +10,5 @@ requests
 PyYaml
 pysocks
 langchain
+selenium
+unstructured
