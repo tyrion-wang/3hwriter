@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, abort, request, jsonify
 from langchain.document_loaders import SeleniumURLLoader
 from langchain import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
@@ -37,7 +38,7 @@ def decode_website(url):
 
 
 def summarize_webpage(text):
-    llm = OpenAI(temperature=0)
+    llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
     text_splitter = CharacterTextSplitter()
     texts = text_splitter.split_text(text)
     print(len(texts))

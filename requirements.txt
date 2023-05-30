@@ -12,3 +12,4 @@ pysocks
 langchain
 selenium
 unstructured
+tiktoken
