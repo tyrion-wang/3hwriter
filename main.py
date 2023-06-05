@@ -4,7 +4,7 @@ import openai
 import os
 import json
 import gpt_lib
-from langchain_test import simple_page
+from langchain_test import langchain_test_page
 # import logging
 import langchain_test
 
@@ -17,7 +17,7 @@ app.config['SECRET_KEY'] = os.urandom(24)
 # logging.disable()
 
 #注册蓝图模块
-app.register_blueprint(simple_page)
+app.register_blueprint(langchain_test_page)
 
 
 # 定义首页

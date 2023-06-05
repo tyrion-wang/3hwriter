@@ -8,8 +8,8 @@ from langchain.chains.summarize import load_summarize_chain
 import textwrap
 
 import langchain
-simple_page = Blueprint('simple_page', __name__, template_folder='templates')
-@simple_page.route('/summary_url', methods=['GET', 'POST'])
+langchain_test_page = Blueprint('langchain_test', __name__, template_folder='templates')
+@langchain_test_page.route('/summary_url', methods=['GET', 'POST'])
 def summary_url():
     send_message = ""
     if request.method == 'GET':
@@ -50,3 +50,9 @@ def summarize_webpage(text):
     print(wrapped_text)
 
     return wrapped_text
+
+
+@langchain_test_page.route('/summary_doc', methods=['GET', 'POST'])
+def summary_doc():
+    print("DEBUG summary_doc")
+    return jsonify({'msg': "DEBUG summary_doc"})
