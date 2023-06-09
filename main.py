@@ -5,20 +5,38 @@ import os
 import json
 import gpt_lib
 from langchain_test import langchain_test_page
+from auth import auth_bp
+from flask_sqlalchemy import SQLAlchemy
 # import logging
-import langchain_test
+
+class ConfigClass(object):
+    """ Flask application config """
+
+    # Flask settings
+    SECRET_KEY = os.urandom(24)
+
+    # Flask-SQLAlchemy settings
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:xwwnLvRP0TVhelMVghnT@containers-us-west-9.railway.app:5838/railway'    # File-based SQL database
+    SQLALCHEMY_TRACK_MODIFICATIONS = False    # Avoids SQLAlchemy warning
+
+    # Flask-User settings
+    USER_APP_NAME = "Flask-User QuickStart App"      # Shown in and email templates and page footers
+    USER_ENABLE_EMAIL = True      # Disable email authentication
+    USER_ENABLE_USERNAME = True    # Enable username authentication
+    USER_REQUIRE_RETYPE_PASSWORD = False    # Simplify register form
 
 # 配置openai的API Key
 gpt_lib.set_openai_key()
 # 初始化Flask
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(24)
+app.config.from_object(__name__+'.ConfigClass')
+db = SQLAlchemy(app)
 # logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
 
 #注册蓝图模块
 app.register_blueprint(langchain_test_page)
-
+app.register_blueprint(auth_bp)
 
 # 定义首页
 @app.route('/lc', methods=['GET', 'POST'])

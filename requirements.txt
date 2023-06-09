@@ -13,3 +13,7 @@ langchain
 selenium
 unstructured
 tiktoken
+Flask-Login
+Flask-SQLAlchemy
+mysqlclient
+pymysql
