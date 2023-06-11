@@ -1,5 +1,6 @@
 import flask
 from flask import Flask, render_template, request, jsonify, Response, session
+from flask_admin import Admin, BaseView, expose
 import openai
 import os
 import json
@@ -10,6 +11,7 @@ import gpt_lib
 gpt_lib.set_openai_key()
 # 初始化Flask
 app = Flask(__name__)
+admin = Admin(app, name=u'后台管理系统', template_mode='bootstrap3')
 app.config['SECRET_KEY'] = os.urandom(24)
 # logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
