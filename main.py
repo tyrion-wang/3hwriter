@@ -30,7 +30,7 @@ gpt_lib.set_openai_key()
 # 初始化Flask
 app = Flask(__name__)
 app.config.from_object(__name__+'.ConfigClass')
-db = SQLAlchemy(app)
+print(app.name)
 # logging.basicConfig(level=logging.DEBUG)
 # logging.disable()
 
